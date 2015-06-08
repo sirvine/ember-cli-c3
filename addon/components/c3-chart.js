@@ -34,11 +34,13 @@ export default Ember.Component.extend({
   }.property('_chart'),
 
   generateChart: function() {
+    console.log('generateChart: ', this.get('data'));
     var cachedChart = this.get('_chart'),
       container = this.get('element'),
       data = this.get('data'),
       config, chart;
 
+    console.log('generateChart:cachedChart: ', cachedChart);
     if (!Ember.isEqual(cachedChart, undefined)) {
       // If the element or config changes, we need to
       // destroy the existing chart before re-creating
@@ -49,24 +51,34 @@ export default Ember.Component.extend({
       config = this.get('config');
       config['data'] = data;
       config['bindto'] = container;
+      console.log('c3.generate(config): ', config);
       chart = c3.generate(config);
       this.set('_chart', chart);
     }
   }.observes('config'),
 
   didInsertElement: function() {
-		this._super();
-		var chart = this.get('chart');
-		chart.load(this.get('data'));
-	},
-	
-	chartShouldLoadData: function() {
-	  var _this = this;
+    console.log('didInsertElement: ', this.get('data'));
+    this._super();
+    var chart = this.get('chart');
+    console.log('didInsertElement:chart.load: ', this.get('data'));
+    chart.load(this.get('data'));
+  },
+
+  didUpdateAttrs: function() {
+    console.log('c3-chart:didUpdateAttrs');
+    this.rerender();
+  },
+
+  chartShouldLoadData: function() {
+    console.log('chartShouldLoadData: ', this.get('data'));
+    var _this = this;
     var chart = this.get('chart');
     var currentIds = this.get('data.columns').mapBy('firstObject');
     var unloadIds = chart.data().mapBy('id').filter(function(id) {
-    	return currentIds.indexOf(id) < 0;
+      return currentIds.indexOf(id) < 0;
     });
+    console.log('chartShouldLoadData:chart.load: ', _this.get('data.columns'));
     chart.load({columns: _this.get('data.columns'), unload: unloadIds});
   }.observes('data')
 
