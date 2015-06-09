@@ -22,25 +22,21 @@ export default Ember.Component.extend({
   /**
    The Chart
    */
-  chart: function () {
+  chart: Ember.computed('_chart', function () {
     var cachedChart = this.get('_chart');
-
     if (Ember.isEqual(cachedChart, undefined)) {
       this.generateChart();
       cachedChart = this.get('_chart');
     }
-
     return cachedChart;
-  }.property('_chart'),
+  }),
 
-  generateChart: function() {
-    console.log('generateChart: ', this.get('data'));
+  generateChart: Ember.observer('config', function() {
     var cachedChart = this.get('_chart'),
       container = this.get('element'),
       data = this.get('data'),
       config, chart;
 
-    console.log('generateChart:cachedChart: ', cachedChart);
     if (!Ember.isEqual(cachedChart, undefined)) {
       // If the element or config changes, we need to
       // destroy the existing chart before re-creating
@@ -51,35 +47,25 @@ export default Ember.Component.extend({
       config = this.get('config');
       config['data'] = data;
       config['bindto'] = container;
-      console.log('c3.generate(config): ', config);
       chart = c3.generate(config);
       this.set('_chart', chart);
     }
-  }.observes('config'),
+  }),
 
   didInsertElement: function() {
-    console.log('didInsertElement: ', this.get('data'));
     this._super();
     var chart = this.get('chart');
-    console.log('didInsertElement:chart.load: ', this.get('data'));
     chart.load(this.get('data'));
   },
 
-  didUpdateAttrs: function() {
-    console.log('c3-chart:didUpdateAttrs');
-    this.rerender();
-  },
-
-  chartShouldLoadData: function() {
-    console.log('chartShouldLoadData: ', this.get('data'));
+  chartShouldLoadData: Ember.observer('data', function() {
     var _this = this;
     var chart = this.get('chart');
-    var currentIds = this.get('data.columns').mapBy('firstObject');
-    var unloadIds = chart.data().mapBy('id').filter(function(id) {
-      return currentIds.indexOf(id) < 0;
-    });
-    console.log('chartShouldLoadData:chart.load: ', _this.get('data.columns'));
-    chart.load({columns: _this.get('data.columns'), unload: unloadIds});
-  }.observes('data')
+    if (this.get('data')) {
+      this.set('_chart', undefined);
+      this.generateChart();
+      chart.load(this.get('data'));
+    }
+  })
 
 });
