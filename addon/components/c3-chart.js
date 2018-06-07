@@ -23,12 +23,12 @@ export default Ember.Component.extend({
    The Chart
    */
   chart: Ember.computed('_chart', function () {
-    var cachedChart = this.get('_chart');
-    if (Ember.isEqual(cachedChart, undefined)) {
-      this.generateChart();
-      cachedChart = this.get('_chart');
-    }
-    return cachedChart;
+    // var cachedChart = this.get('_chart');
+    // if (Ember.isEqual(cachedChart, undefined)) {
+    this.generateChart();
+    chart = this.get('_chart');
+    // }
+    return chart;
   }),
 
   generateChart: Ember.observer('config', function() {
@@ -52,8 +52,8 @@ export default Ember.Component.extend({
     }
   }),
 
-  didInsertElement: function() {
-    this._super();
+  didUpdateAttrs: function() {
+    // this._super();
     var chart = this.get('chart');
     chart.load(this.get('data'));
   },
